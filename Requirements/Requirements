@@ -1,0 +1,114 @@
+Vancouver Cherry Blossom Tracker Requirements
+Core Features
+
+1. Main Page
+   Display a table of Vancouver neighborhoods ranked by number of cherry blossom trees
+   Show loading state with animated sakura (🌸) icon while fetching data
+   Display total number of trees found during loading
+   Show warning if API record limit (10,000) is reached
+   Make neighborhoods clickable to view details
+
+2. Neighborhood Details Modal
+   Opens when clicking a neighborhood
+   Shows top 10 streets with cherry blossom trees in the selected neighborhood
+   Displays:
+   Street name
+   Number of cherry trees
+   Bloom status
+   Report status
+   Includes a map view of tree locations
+
+3. Bloom Status System
+   Three possible states:
+   🌸 Blooming
+   ❓ Unknown (sakura-colored)
+   Status can be reported via dropdown menu
+   Status is cached for persistence
+   Status includes:
+   Current state
+   User report timestamp
+   Reporter username (currently "Anonymous")
+
+4. Map Integration
+   Shows tree locations within selected neighborhood
+   Uses custom sakura markers for tree locations
+   Displays neighborhood boundaries
+   Marker Display:
+   Only show markers for streets with more than 20 cherry blossom trees
+   Markers are location pin-shaped with a circular top and pointed bottom
+   Marker size is 40px with a light pink border
+   Marker Colors:
+   Sakura pink (#ffb7c5) for blooming trees
+   White with light pink border for non-blooming trees
+   White with light pink border for unknown status
+   Marker Content:
+   Each marker displays the number of trees in dark pink (#d81b60)
+   Text is positioned in the top portion of the marker
+   Font size is 12px and bold
+   Popup Information (when clicking a marker):
+   Street name
+   Bloom status with emoji:
+   🌸 for blooming
+   ❓ for unknown
+   Number of cherry blossom trees
+   Text is center-aligned
+   Map Features:
+   Uses OpenStreetMap tiles
+   Initial view centered on Vancouver (49.2827, -123.1207) at zoom level 13
+   Automatically fits bounds to show all markers with 50px padding
+   Map container height is 400px and full width
+   Data Handling:
+   Groups trees by street
+   Calculates average position for each street's marker
+   Uses the first tree's bloom status for the street group
+   Cleans up markers when component unmounts
+   Performance:
+   Caches markers in a ref to prevent unnecessary re-renders
+   Only updates markers when the trees data changes
+   Logs debugging information for data flow and marker creation
+
+5. Data Management
+   Caches API responses for 24 hours
+   Caches:
+   Neighborhood counts
+   Street-specific data
+   Bloom status reports
+   Handles API pagination (100 records per page)
+   Maximum record limit of 10,000 trees
+6. UI/UX Requirements
+   Responsive design for mobile and desktop
+   Loading animations with sakura theme
+   Interactive elements:
+   Clickable neighborhoods
+   Dropdown menus for reporting
+   Modal windows for details
+   Color scheme:
+   Primary: Sakura pink (#ffb7c5)
+   Secondary: Light pink (#fff5f7)
+   Accent: Hot pink (#ff69b4)
+7. Error Handling
+   Displays error messages for API failures
+   Graceful fallback for missing data
+   Cache error handling
+   Loading state management
+8. Accessibility
+   Keyboard navigation support
+   ARIA roles for interactive elements
+   Semantic HTML structure
+   Clear visual hierarchy
+9. Performance
+   Lazy loading of neighborhood details
+   Cached API responses
+   Paginated data fetching
+   Optimized rendering of large datasets
+10. Data Sources
+    Vancouver Open Data API
+    Endpoint: public-trees dataset
+    Filters for PRUNUS genus (cherry trees)
+    Includes:
+    Tree ID
+    Street name
+    Species information
+    Location coordinates
+    Neighborhood name
+    This documentation covers the current implementation. Let me know if you'd like me to expand on any particular aspect or if there are additional requirements to add.

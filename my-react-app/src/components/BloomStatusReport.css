@@ -1,0 +1,40 @@
+.bloom-status-report {
+    padding: 10px 0;
+    text-align: center;
+}
+
+.status-select {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.status-info {
+    color: #666;
+    font-size: 12px;
+}
+
+.error-message {
+    color: #d32f2f;
+    margin-bottom: 8px;
+    font-size: 12px;
+}
+
+/* Leaflet popup customization */
+.leaflet-popup-content {
+    margin: 10px;
+    min-width: 200px !important;
+}
+
+.leaflet-popup-content select {
+    width: 100%;
+}
+
+/* Accessibility focus styles */
+.status-select:focus-visible {
+    outline: 2px solid #ff69b4;
+    outline-offset: 2px;
+}

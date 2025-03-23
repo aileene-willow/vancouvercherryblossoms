@@ -1,0 +1,17 @@
+.marker-tooltip {
+    background-color: white;
+    border: 1px solid #ffb7c5;
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-size: 12px;
+    color: #333;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.marker-tooltip::before {
+    border-top-color: #ffb7c5;
+}
+
+.leaflet-tooltip {
+    margin-top: 8px;
+}
