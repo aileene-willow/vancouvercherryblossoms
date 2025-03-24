@@ -4,6 +4,7 @@ const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:300
 
 const defaultOptions: RequestInit = {
     mode: 'cors',
+    credentials: 'omit',
     headers: {
         'Content-Type': 'application/json'
     }

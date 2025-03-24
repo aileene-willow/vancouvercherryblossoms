@@ -19,16 +19,19 @@ const pool = new Pool({
 // Initialize database layer
 const bloomStatusDB = new BloomStatusDB(pool);
 
-// Middleware
-app.use(cors({
-    origin: process.env.NODE_ENV === 'production' 
-        ? ['https://aileene-willow.github.io', 'https://aileene-willow.github.io/vancouvercherryblossoms']
-        : ['http://localhost:3000', 'https://aileene-willow.github.io'],
+// CORS configuration
+const corsOptions = {
+    origin: 'https://aileene-willow.github.io',
     methods: ['GET', 'POST', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true,
-    optionsSuccessStatus: 200
-}));
+    credentials: false,
+    optionsSuccessStatus: 204, // Some legacy browsers (IE11, various SmartTVs) choke on 204
+    maxAge: 86400 // 24 hours
+};
+
+// Apply CORS middleware for all routes
+app.use(cors(corsOptions));
+
 app.use(express.json());
 
 // Rate limiting middleware (20 requests per minute per IP)

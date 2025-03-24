@@ -2,18 +2,18 @@
     "version": 2,
     "builds": [
         {
-            "src": "dist/index.js",
+            "src": "src/index.ts",
             "use": "@vercel/node"
         }
     ],
     "rewrites": [
         {
             "source": "/api/(.*)",
-            "destination": "/dist/index.js"
+            "destination": "/src/index.ts"
         },
         {
             "source": "/(.*)",
-            "destination": "/dist/index.js"
+            "destination": "/src/index.ts"
         }
     ],
     "headers": [
@@ -33,8 +33,8 @@
                     "value": "Content-Type, Authorization"
                 },
                 {
-                    "key": "Access-Control-Allow-Credentials",
-                    "value": "true"
+                    "key": "Access-Control-Max-Age",
+                    "value": "86400"
                 }
             ]
         }
