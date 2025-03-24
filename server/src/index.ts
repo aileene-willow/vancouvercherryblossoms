@@ -2,13 +2,18 @@ import express from 'express';
 import cors from 'cors';
 import { Pool } from 'pg';
 import { BloomStatusDB } from './db/bloomStatus';
+import dotenv from 'dotenv';
+
+// Load environment variables based on NODE_ENV
+const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env.development';
+dotenv.config({ path: envFile });
 
 const app = express();
 const port = process.env.PORT || 3001;
 
 // Database connection
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL || 'postgresql://localhost:5432/cherry_blossom_tracker'
+    connectionString: process.env.DATABASE_URL
 });
 
 // Initialize database layer

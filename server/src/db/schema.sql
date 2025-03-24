@@ -22,12 +22,6 @@ CREATE TABLE bloom_status_reports (
     longitude DECIMAL(11, 8)
 );
 
--- Create indexes for performance
-CREATE INDEX idx_streets_neighborhood ON streets(neighborhood);
-CREATE INDEX idx_bloom_status_street_id ON bloom_status_reports(street_id);
-CREATE INDEX idx_bloom_status_timestamp ON bloom_status_reports(timestamp);
-CREATE INDEX idx_bloom_status_neighborhood_status ON current_bloom_status(neighborhood, status);
-
 -- Create view for current status
 CREATE OR REPLACE VIEW current_bloom_status AS
 SELECT DISTINCT ON (s.id)
@@ -41,4 +35,10 @@ SELECT DISTINCT ON (s.id)
     bsr.longitude
 FROM streets s
 LEFT JOIN bloom_status_reports bsr ON s.id = bsr.street_id
-ORDER BY s.id, bsr.timestamp DESC; 
+ORDER BY s.id, bsr.timestamp DESC;
+
+-- Create indexes for performance
+CREATE INDEX idx_streets_neighborhood ON streets(neighborhood);
+CREATE INDEX idx_bloom_status_street_id ON bloom_status_reports(street_id);
+CREATE INDEX idx_bloom_status_timestamp ON bloom_status_reports(timestamp);
+CREATE INDEX idx_bloom_status_street_timestamp ON bloom_status_reports(street_id, timestamp DESC); 
