@@ -20,7 +20,11 @@ const pool = new Pool({
 const bloomStatusDB = new BloomStatusDB(pool);
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: (process.env.ALLOWED_ORIGINS || 'http://localhost:3000,https://aileene-willow.github.io').split(','),
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type']
+}));
 app.use(express.json());
 
 // Rate limiting middleware (20 requests per minute per IP)
@@ -126,7 +130,12 @@ app.get('/api/bloom-status/recent', async (req, res) => {
     }
 });
 
-// Start server
-app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
-}); 
+// Start server only if not running on Vercel
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(port, () => {
+        console.log(`Server running on port ${port}`);
+    });
+}
+
+// Export for Vercel
+export default app; 

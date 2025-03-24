@@ -106,6 +106,7 @@ const NeighborhoodMap: React.FC<NeighborhoodMapProps> = ({ neighborhoods, onNeig
                                     color: #666;
                                     margin-top: 2px;
                                 ">${neighborhood.count} 🌸 trees</div>
+                                
                             </div>
                         </div>
                     `,
@@ -159,12 +160,10 @@ const NeighborhoodMap: React.FC<NeighborhoodMapProps> = ({ neighborhoods, onNeig
             }}>
                 <div className="legend-items" >
                     <div className="legend-item">
-                        <div className="legend-color" style={{ backgroundColor: '#d81b60' }}></div>
+                        <div className="legend-color confirmed"></div>
                         <span>Confirmed Blooms</span>
-                    </div>
-                    <div className="legend-item">
-                        <div className="legend-color" style={{ backgroundColor: '#ffffff' }}></div>
-                        <span>Bloom Status Unknown</span>
+                        <div className="legend-color unknown"></div>
+                        <span>Unknown Bloom Status</span>
                     </div>
                 </div>
             </div>

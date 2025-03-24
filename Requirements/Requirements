@@ -19,9 +19,9 @@ Core Features
    Includes a map view of tree locations
 
 3. Bloom Status System
-   Three possible states:
+   Two possible states:
    🌸 Blooming
-   ❓ Unknown (sakura-colored)
+   ❓ Unknown (white)
    Status can be reported via dropdown menu
    Status is cached for persistence
    Status includes:

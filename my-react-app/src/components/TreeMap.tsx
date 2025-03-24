@@ -59,22 +59,16 @@ const TreeMap: React.FC<TreeMapProps> = ({ trees, neighborhood, onStatusUpdate }
         const svg = `
             <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
                 <g transform="translate(${size / 2}, ${size / 2})">
-                    <!-- Location pin shape -->
-                    <path d="M0 ${-radius * 0.8}
-                           C${radius * 0.4} ${-radius * 0.8}, ${radius * 0.8} ${-radius * 0.4}, ${radius * 0.8} 0
-                           C${radius * 0.8} ${radius * 0.4}, ${radius * 0.4} ${radius * 0.8}, 0 ${radius * 0.8}
-                           C${-radius * 0.4} ${radius * 0.8}, ${-radius * 0.8} ${radius * 0.4}, ${-radius * 0.8} 0
-                           C${-radius * 0.8} ${-radius * 0.4}, ${-radius * 0.4} ${-radius * 0.8}, 0 ${-radius * 0.8}
-                           L0 ${radius * 1.2}
-                           L${-radius * 0.2} ${radius * 0.8}
-                           L0 ${radius * 1.2}
-                           L${radius * 0.2} ${radius * 0.8}
-                           Z"
-                          fill="${markerColor}"
-                          stroke="${strokeColor}"
-                          stroke-width="1"/>
+                    <!-- Circle shape -->
+                    <circle 
+                        cx="0" 
+                        cy="0" 
+                        r="${radius}"
+                        fill="${markerColor}"
+                        stroke="${strokeColor}"
+                        stroke-width="1"/>
                     <!-- Count text -->
-                    <text x="0" y="${-radius * 0.2}" 
+                    <text x="0" y="0" 
                           text-anchor="middle" 
                           dominant-baseline="middle" 
                           fill="${bloomStatus === 'blooming' ? '#ffffff' : '#d81b60'}" 
@@ -503,7 +497,7 @@ const TreeMap: React.FC<TreeMapProps> = ({ trees, neighborhood, onStatusUpdate }
                     const popupContent = `
                         <div style="text-align: center;">
                             <strong>${street}</strong><br>
-                            ${group.count} 🌸🌸 trees
+                            ${group.count} 🌸 trees
                         </div>
                         <div id="status-report-${street.replace(/\s+/g, '-')}"></div>
                         <div></div>

@@ -1014,9 +1014,21 @@ const CherryBlossoms: React.FC = () => {
                                     </div>
                                 ) : (
                                     <div className="map-container">
+                                        <div className="map-legend" style={{
+                                            display: 'flex',
+                                            justifyContent: 'center',
+                                        }}>
+                                            <div className="legend-item">
+                                                <div className="legend-color confirmed"></div>
+                                                <span className="legend-label">Confirmed Blooms</span>
+                                            </div>
+                                            <div className="legend-item">
+                                                <div className="legend-color unknown"></div>
+                                                <span className="legend-label">Unknown Bloom Status</span>
+                                            </div>
+                                        </div>
                                         <p className="map-instructions">
-                                            Click on any marker to view street details and report bloom status.
-                                            The status will be updated in real-time.
+                                            Click on any marker to view the street and report bloom status.
                                         </p>
                                         <TreeMap
                                             trees={treeLocations}

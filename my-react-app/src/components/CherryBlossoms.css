@@ -556,22 +556,12 @@
 
 .map-legend {
     background-color: white;
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    margin-bottom: 15px;
-}
-
-.map-legend h4 {
-    margin: 0 0 10px 0;
-    color: #333;
-    font-size: 16px;
-}
-
-.legend-items {
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 10px;
     display: flex;
     gap: 20px;
-    flex-wrap: wrap;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .legend-item {
@@ -581,14 +571,38 @@
 }
 
 .legend-color {
-    width: 20px;
-    height: 20px;
+    width: 16px;
+    height: 16px;
     border-radius: 50%;
-    border: 2px solid white;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+    border: 1px solid #ddd;
 }
 
-.legend-item span {
-    font-size: 14px;
+.legend-color.confirmed {
+    background-color: #ff69b4;
+}
+
+.legend-color.unknown {
+    background-color: #ffffff;
+    border: 1px solid #ffb7c5;
+}
+
+.legend-label {
     color: #666;
+    font-size: 0.9em;
+}
+
+/* Neighborhood map legend specific styles */
+.neighborhood-map-section .legend-color.confirmed {
+    background-color: #d81b60;
+}
+
+.neighborhood-map-section .legend-color.unknown {
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+}
+
+/* Update the unknown status marker style */
+.unknown-status {
+    background-color: #ffffff;
+    border: 1px solid #ffb7c5;
 }
