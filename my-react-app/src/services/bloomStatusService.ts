@@ -2,10 +2,20 @@ import { BloomStatus, BloomStatusReport, BloomStatusStats } from '../types/bloom
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3001/api';
 
+const defaultOptions: RequestInit = {
+    mode: 'cors',
+    headers: {
+        'Content-Type': 'application/json'
+    }
+};
+
 export const bloomStatusService = {
     async getStatus(street: string): Promise<BloomStatusReport | null> {
         try {
-            const response = await fetch(`${API_BASE_URL}/bloom-status/${encodeURIComponent(street)}`);
+            const response = await fetch(
+                `${API_BASE_URL}/bloom-status/${encodeURIComponent(street)}`,
+                defaultOptions
+            );
             if (!response.ok) {
                 if (response.status === 404) return null;
                 throw new Error('Failed to fetch bloom status');
@@ -21,10 +31,8 @@ export const bloomStatusService = {
         console.log('Updating status:', report);
         try {
             const response = await fetch(`${API_BASE_URL}/bloom-status`, {
+                ...defaultOptions,
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
                 body: JSON.stringify(report),
             });
 
@@ -48,7 +56,10 @@ export const bloomStatusService = {
 
     async getNeighborhoodStats(neighborhood: string): Promise<BloomStatusStats> {
         try {
-            const response = await fetch(`${API_BASE_URL}/bloom-status/stats/${encodeURIComponent(neighborhood)}`);
+            const response = await fetch(
+                `${API_BASE_URL}/bloom-status/stats/${encodeURIComponent(neighborhood)}`,
+                defaultOptions
+            );
             if (!response.ok) throw new Error('Failed to fetch neighborhood stats');
             return await response.json();
         } catch (error) {
@@ -59,7 +70,10 @@ export const bloomStatusService = {
 
     async getRecentReports(limit: number = 10): Promise<BloomStatusReport[]> {
         try {
-            const response = await fetch(`${API_BASE_URL}/bloom-status/recent?limit=${limit}`);
+            const response = await fetch(
+                `${API_BASE_URL}/bloom-status/recent?limit=${limit}`,
+                defaultOptions
+            );
             if (!response.ok) throw new Error('Failed to fetch recent reports');
             return await response.json();
         } catch (error) {
