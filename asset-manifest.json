@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/vancouvercherryblossoms/static/css/main.7767cd32.css",
-    "main.js": "/vancouvercherryblossoms/static/js/main.3f11adad.js",
+    "main.css": "/vancouvercherryblossoms/static/css/main.3250da7c.css",
+    "main.js": "/vancouvercherryblossoms/static/js/main.99fd75ad.js",
     "static/js/453.ad6eb26e.chunk.js": "/vancouvercherryblossoms/static/js/453.ad6eb26e.chunk.js",
     "index.html": "/vancouvercherryblossoms/index.html",
-    "main.7767cd32.css.map": "/vancouvercherryblossoms/static/css/main.7767cd32.css.map",
-    "main.3f11adad.js.map": "/vancouvercherryblossoms/static/js/main.3f11adad.js.map",
+    "main.3250da7c.css.map": "/vancouvercherryblossoms/static/css/main.3250da7c.css.map",
+    "main.99fd75ad.js.map": "/vancouvercherryblossoms/static/js/main.99fd75ad.js.map",
     "453.ad6eb26e.chunk.js.map": "/vancouvercherryblossoms/static/js/453.ad6eb26e.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.7767cd32.css",
-    "static/js/main.3f11adad.js"
+    "static/css/main.3250da7c.css",
+    "static/js/main.99fd75ad.js"
   ]
 }
