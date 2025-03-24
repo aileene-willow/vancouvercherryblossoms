@@ -10,10 +10,33 @@
             }
         }
     ],
-    "routes": [
+    "rewrites": [
         {
-            "src": "/(.*)",
-            "dest": "dist/index.js"
+            "source": "/api/:path*",
+            "destination": "dist/index.js"
+        },
+        {
+            "source": "/(.*)",
+            "destination": "dist/index.js"
+        }
+    ],
+    "headers": [
+        {
+            "source": "/(.*)",
+            "headers": [
+                {
+                    "key": "Access-Control-Allow-Origin",
+                    "value": "https://aileene-willow.github.io"
+                },
+                {
+                    "key": "Access-Control-Allow-Methods",
+                    "value": "GET, POST, OPTIONS"
+                },
+                {
+                    "key": "Access-Control-Allow-Headers",
+                    "value": "Content-Type"
+                }
+            ]
         }
     ]
 }

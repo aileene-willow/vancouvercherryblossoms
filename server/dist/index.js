@@ -7,16 +7,24 @@ const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const pg_1 = require("pg");
 const bloomStatus_1 = require("./db/bloomStatus");
+const dotenv_1 = __importDefault(require("dotenv"));
+// Load environment variables based on NODE_ENV
+const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env.development';
+dotenv_1.default.config({ path: envFile });
 const app = (0, express_1.default)();
 const port = process.env.PORT || 3001;
 // Database connection
 const pool = new pg_1.Pool({
-    connectionString: process.env.DATABASE_URL || 'postgresql://localhost:5432/cherry_blossom_tracker'
+    connectionString: process.env.DATABASE_URL
 });
 // Initialize database layer
 const bloomStatusDB = new bloomStatus_1.BloomStatusDB(pool);
 // Middleware
-app.use((0, cors_1.default)());
+app.use((0, cors_1.default)({
+    origin: (process.env.ALLOWED_ORIGINS || 'http://localhost:3000,https://aileene-willow.github.io').split(','),
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type']
+}));
 app.use(express_1.default.json());
 // Rate limiting middleware (20 requests per minute per IP)
 const rateLimit = new Map();
@@ -109,7 +117,11 @@ app.get('/api/bloom-status/recent', async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
-// Start server
-app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
-});
+// Start server only if not running on Vercel
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(port, () => {
+        console.log(`Server running on port ${port}`);
+    });
+}
+// Export for Vercel
+exports.default = app;
