@@ -8,12 +8,23 @@ import dotenv from 'dotenv';
 const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env.development';
 dotenv.config({ path: envFile });
 
+// Log environment and database connection info (without exposing sensitive data)
+console.log('Environment:', process.env.NODE_ENV);
+console.log('Database URL exists:', !!process.env.DATABASE_URL);
+console.log('Database URL format:', process.env.DATABASE_URL?.includes('postgres://') ? 'Valid PostgreSQL URL' : 'Invalid URL format');
+
 const app = express();
 const port = process.env.PORT || 3001;
 
 // Database connection
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL
+    connectionString: process.env.DATABASE_URL,
+    max: 5, // Reduce max connections
+    idleTimeoutMillis: 10000, // Reduce idle timeout
+    connectionTimeoutMillis: 5000, // Increase connection timeout
+    ssl: process.env.NODE_ENV === 'production' ? {
+        rejectUnauthorized: false
+    } : undefined
 });
 
 // Initialize database layer
@@ -86,10 +97,46 @@ app.get('/api', (req, res) => {
     res.json({ status: 'ok', message: 'API is running' });
 });
 
+// Test database connection
+app.get('/api/test-db', async (req, res) => {
+    console.log('Testing database connection...');
+    console.log('Environment:', process.env.NODE_ENV);
+    console.log('Database URL exists:', !!process.env.DATABASE_URL);
+    console.log('Database URL format:', process.env.DATABASE_URL?.includes('postgres://') ? 'Valid' : 'Invalid');
+    
+    try {
+        console.log('Attempting to connect to database...');
+        const client = await pool.connect();
+        console.log('Successfully connected to database');
+        
+        try {
+            console.log('Executing test query...');
+            const result = await client.query('SELECT NOW()');
+            console.log('Query result:', result.rows[0]);
+            res.json({ status: 'success', timestamp: result.rows[0].now });
+        } finally {
+            client.release();
+        }
+    } catch (error) {
+        console.error('Database connection error:', error);
+        res.status(500).json({ 
+            status: 'error', 
+            message: 'Database connection failed',
+            error: error instanceof Error ? error.message : 'Unknown error',
+            stack: error instanceof Error ? error.stack : undefined
+        });
+    }
+});
+
 app.get('/api/bloom-status/:street', async (req, res) => {
     try {
         const { street } = req.params;
-        const status = await bloomStatusDB.getStreetStatus(street);
+        const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Request timeout')), 5000);
+        });
+        const statusPromise = bloomStatusDB.getStreetStatus(street);
+        
+        const status = await Promise.race([statusPromise, timeoutPromise]);
         res.json(status || { status: 'unknown' });
     } catch (error) {
         console.error('Error fetching bloom status:', error);

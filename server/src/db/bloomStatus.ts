@@ -7,19 +7,28 @@ export class BloomStatusDB {
     async getStreetStatus(street: string): Promise<any> {
         console.log('Getting status for street:', street);
         const query = `
+            WITH latest_status AS (
+                SELECT 
+                    street_id,
+                    status,
+                    last_updated as timestamp,
+                    latitude,
+                    longitude,
+                    neighborhood,
+                    ROW_NUMBER() OVER (PARTITION BY street_id ORDER BY last_updated DESC) as rn
+                FROM current_bloom_status
+            )
             SELECT 
                 s.name AS street,
                 s.tree_count,
-                COALESCE(cs.status, 'unknown') as status,
-                cs.last_updated as timestamp,
-                cs.latitude,
-                cs.longitude,
-                cs.neighborhood
+                COALESCE(ls.status, 'unknown') as status,
+                ls.timestamp,
+                ls.latitude,
+                ls.longitude,
+                ls.neighborhood
             FROM streets s
-            LEFT JOIN current_bloom_status cs ON s.id = cs.street_id
+            LEFT JOIN latest_status ls ON s.id = ls.street_id AND ls.rn = 1
             WHERE s.name = $1
-            ORDER BY cs.last_updated DESC
-            LIMIT 1
         `;
         const result = await this.pool.query(query, [street]);
         console.log('Query result:', result.rows[0]);
