@@ -21,9 +21,12 @@ const pool = new pg_1.Pool({
 const bloomStatusDB = new bloomStatus_1.BloomStatusDB(pool);
 // Middleware
 app.use((0, cors_1.default)({
-    origin: (process.env.ALLOWED_ORIGINS || 'http://localhost:3000,https://aileene-willow.github.io').split(','),
-    methods: ['GET', 'POST'],
-    allowedHeaders: ['Content-Type']
+    origin: process.env.NODE_ENV === 'production'
+        ? 'https://aileene-willow.github.io'
+        : ['http://localhost:3000', 'https://aileene-willow.github.io'],
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type'],
+    credentials: true
 }));
 app.use(express_1.default.json());
 // Rate limiting middleware (20 requests per minute per IP)
