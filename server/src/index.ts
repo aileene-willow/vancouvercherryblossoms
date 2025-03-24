@@ -22,11 +22,12 @@ const bloomStatusDB = new BloomStatusDB(pool);
 // Middleware
 app.use(cors({
     origin: process.env.NODE_ENV === 'production' 
-        ? 'https://aileene-willow.github.io'
+        ? ['https://aileene-willow.github.io', 'https://aileene-willow.github.io/vancouvercherryblossoms']
         : ['http://localhost:3000', 'https://aileene-willow.github.io'],
     methods: ['GET', 'POST', 'OPTIONS'],
-    allowedHeaders: ['Content-Type'],
-    credentials: true
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+    optionsSuccessStatus: 200
 }));
 app.use(express.json());
 
