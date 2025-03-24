@@ -37,7 +37,6 @@ export const bloomStatusService = {
                 body: JSON.stringify(report),
             });
 
-            console.log('Response status:', response.status);
             if (!response.ok) {
                 const errorData = await response.json();
                 if (response.status === 429) {
@@ -47,8 +46,7 @@ export const bloomStatusService = {
                 throw new Error(errorData.error || 'Failed to update bloom status');
             }
 
-            const data = await response.json();
-            return data;
+            return await response.json();
         } catch (error) {
             console.error('Error in updateStatus:', error);
             throw error;
