@@ -19,26 +19,22 @@ const pool = new Pool({
 // Initialize database layer
 const bloomStatusDB = new BloomStatusDB(pool);
 
-// Single CORS configuration
-const corsOptions = {
-    origin: 'https://aileene-willow.github.io',
-    methods: ['GET', 'POST', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: false,
-    optionsSuccessStatus: 204
-};
-
-// Apply CORS middleware
-app.use(cors(corsOptions));
-
-// Ensure OPTIONS requests are handled properly
-app.options('*', (req, res) => {
-    res.status(204)
-        .header('Access-Control-Allow-Origin', 'https://aileene-willow.github.io')
-        .header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-        .header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-        .header('Access-Control-Max-Age', '86400')
-        .end();
+// CORS middleware
+app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    if (origin === 'https://aileene-willow.github.io' || origin === 'http://localhost:3000') {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.setHeader('Access-Control-Max-Age', '86400');
+    
+    // Handle preflight
+    if (req.method === 'OPTIONS') {
+        res.status(204).end();
+        return;
+    }
+    next();
 });
 
 app.use(express.json());
