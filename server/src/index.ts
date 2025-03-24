@@ -72,6 +72,14 @@ const rateLimiter = (req: express.Request, res: express.Response, next: express.
 };
 
 // Routes
+app.get('/', (req, res) => {
+    res.json({ status: 'ok', message: 'Server is running' });
+});
+
+app.get('/api', (req, res) => {
+    res.json({ status: 'ok', message: 'API is running' });
+});
+
 app.get('/api/bloom-status/:street', async (req, res) => {
     try {
         const { street } = req.params;
