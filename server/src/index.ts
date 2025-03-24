@@ -19,18 +19,27 @@ const pool = new Pool({
 // Initialize database layer
 const bloomStatusDB = new BloomStatusDB(pool);
 
-// CORS configuration
+// Single CORS configuration
 const corsOptions = {
     origin: 'https://aileene-willow.github.io',
     methods: ['GET', 'POST', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: false,
-    optionsSuccessStatus: 204, // Some legacy browsers (IE11, various SmartTVs) choke on 204
-    maxAge: 86400 // 24 hours
+    optionsSuccessStatus: 204
 };
 
-// Apply CORS middleware for all routes
+// Apply CORS middleware
 app.use(cors(corsOptions));
+
+// Ensure OPTIONS requests are handled properly
+app.options('*', (req, res) => {
+    res.status(204)
+        .header('Access-Control-Allow-Origin', 'https://aileene-willow.github.io')
+        .header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+        .header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+        .header('Access-Control-Max-Age', '86400')
+        .end();
+});
 
 app.use(express.json());
 
