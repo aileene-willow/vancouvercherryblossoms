@@ -19,7 +19,7 @@ export const bloomStatusService = {
     async getStatus(street: string): Promise<BloomStatusReport | null> {
         try {
             const response = await fetch(
-                `${API_BASE_URL}/bloom-status/${encodeURIComponent(street)}`,
+                `${API_BASE_URL}/bloom-status?street=${encodeURIComponent(street)}`,
                 defaultOptions
             );
             if (!response.ok) {
