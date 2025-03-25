@@ -145,9 +145,12 @@ app.get('/api/test-db', async (req, res) => {
     }
 });
 
-app.get('/api/bloom-status/:street', async (req, res) => {
+app.get('/api/bloom-status', async (req, res) => {
     try {
-        const { street } = req.params;
+        const { street } = req.query;
+        if (!street || typeof street !== 'string') {
+            return res.status(400).json({ error: 'Street parameter is required' });
+        }
         const timeoutPromise = new Promise((_, reject) => {
             setTimeout(() => reject(new Error('Request timeout')), 5000);
         });
@@ -177,7 +180,9 @@ app.post('/api/bloom-status', rateLimiter, async (req, res) => {
             street,
             status,
             neighborhood,
-
+            latitude,
+            longitude,
+            treeCount
         );
         console.log('Status update result:', result);
         res.json(result);
