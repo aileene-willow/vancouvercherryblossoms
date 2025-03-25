@@ -7,8 +7,12 @@
         "start": "node dist/index.js",
         "dev": "ts-node-dev src/index.ts",
         "build": "tsc",
-        "db:migrate:dev": "NODE_ENV=development ts-node src/db/migrate.ts",
-        "db:migrate:prod": "NODE_ENV=production ts-node src/db/migrate.ts"
+        "db:migrate": "ts-node src/db/migrate.ts",
+        "test": "jest",
+        "test:watch": "jest --watch",
+        "test:coverage": "jest --coverage",
+        "test:local": "TEST_ENV=local jest",
+        "test:prod": "TEST_ENV=production jest"
     },
     "dependencies": {
         "@types/dotenv": "^6.1.1",
@@ -20,8 +24,13 @@
     "devDependencies": {
         "@types/cors": "^2.8.17",
         "@types/express": "^4.17.21",
+        "@types/jest": "^29.5.14",
         "@types/node": "^20.11.0",
         "@types/pg": "^8.10.9",
+        "@types/supertest": "^6.0.3",
+        "jest": "^29.7.0",
+        "supertest": "^7.1.0",
+        "ts-jest": "^29.3.0",
         "ts-node": "^10.9.2",
         "ts-node-dev": "^2.0.0",
         "typescript": "^5.3.3",

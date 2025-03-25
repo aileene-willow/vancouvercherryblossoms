@@ -1,3 +1,10 @@
+-- Drop existing objects if they exist
+DROP VIEW IF EXISTS current_bloom_status;
+DROP TABLE IF EXISTS bloom_status_reports;
+DROP TABLE IF EXISTS bloom_status;
+DROP TABLE IF EXISTS streets;
+DROP TYPE IF EXISTS bloom_status;
+
 -- Create enum for bloom status
 CREATE TYPE bloom_status AS ENUM ('blooming', 'unknown');
 

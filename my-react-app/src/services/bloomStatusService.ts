@@ -1,6 +1,10 @@
 import { BloomStatus, BloomStatusReport, BloomStatusStats } from '../types/bloomStatus';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3001/api';
+if (!process.env.REACT_APP_API_BASE_URL) {
+    throw new Error('REACT_APP_API_BASE_URL environment variable is not set');
+}
+
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const defaultOptions: RequestInit = {
     mode: 'cors',

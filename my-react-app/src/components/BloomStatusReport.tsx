@@ -67,7 +67,7 @@ export const BloomStatusReport: React.FC<BloomStatusReportProps> = ({
             };
 
             console.log('Preparing to send status update:', report);
-            console.log('API URL:', process.env.REACT_APP_API_BASE_URL || 'http://localhost:3001/api');
+            console.log('API URL:', process.env.REACT_APP_API_BASE_URL);
 
             const savedReport = await bloomStatusService.updateStatus(report);
             console.log('Status update successful:', savedReport);

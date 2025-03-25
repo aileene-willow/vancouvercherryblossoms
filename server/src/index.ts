@@ -3,28 +3,45 @@ import cors from 'cors';
 import { Pool } from 'pg';
 import { BloomStatusDB } from './db/bloomStatus';
 import dotenv from 'dotenv';
+import path from 'path';
 
 // Load environment variables based on NODE_ENV
-const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env.development';
-dotenv.config({ path: envFile });
+const NODE_ENV = process.env.NODE_ENV || 'development';
+const envFile = NODE_ENV === 'production' ? '.env.production' : '.env.development';
+const envPath = path.resolve(process.cwd(), envFile);
 
-// Log environment and database connection info (without exposing sensitive data)
-console.log('Environment:', process.env.NODE_ENV);
+console.log('Loading environment from:', envPath);
+dotenv.config({ path: envPath });
+
+// Verify environment variables
+console.log('Environment:', NODE_ENV);
+console.log('Port:', process.env.PORT);
 console.log('Database URL exists:', !!process.env.DATABASE_URL);
-console.log('Database URL format:', process.env.DATABASE_URL?.includes('postgres://') ? 'Valid PostgreSQL URL' : 'Invalid URL format');
+console.log('Database URL format:', process.env.DATABASE_URL?.includes('postgres'));
 
 const app = express();
 const port = process.env.PORT || 3001;
 
 // Database connection
+console.log('Initializing database connection...');
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    max: 5, // Reduce max connections
-    idleTimeoutMillis: 10000, // Reduce idle timeout
-    connectionTimeoutMillis: 5000, // Increase connection timeout
-    ssl: process.env.NODE_ENV === 'production' ? {
-        rejectUnauthorized: false
-    } : undefined
+    max: 3, // Reduce max connections
+    idleTimeoutMillis: 30000, // Increase idle timeout to 30 seconds
+    connectionTimeoutMillis: 10000, // Increase connection timeout to 10 seconds
+    ssl: {
+        rejectUnauthorized: false // Required for Supabase connections
+    },
+    keepAlive: true // Enable keepalive
+});
+
+// Test the pool on startup
+pool.on('error', (err) => {
+    console.error('Unexpected error on idle client', err);
+});
+
+pool.on('connect', () => {
+    console.log('New client connected to database');
 });
 
 // Initialize database layer
@@ -100,7 +117,7 @@ app.get('/api', (req, res) => {
 // Test database connection
 app.get('/api/test-db', async (req, res) => {
     console.log('Testing database connection...');
-    console.log('Environment:', process.env.NODE_ENV);
+    console.log('Environment:', NODE_ENV);
     console.log('Database URL exists:', !!process.env.DATABASE_URL);
     console.log('Database URL format:', process.env.DATABASE_URL?.includes('postgres://') ? 'Valid' : 'Invalid');
     
@@ -160,9 +177,7 @@ app.post('/api/bloom-status', rateLimiter, async (req, res) => {
             street,
             status,
             neighborhood,
-            latitude,
-            longitude,
-            treeCount
+
         );
         console.log('Status update result:', result);
         res.json(result);
@@ -173,13 +188,51 @@ app.post('/api/bloom-status', rateLimiter, async (req, res) => {
 });
 
 app.get('/api/bloom-status/stats/:neighborhood', async (req, res) => {
+    const TIMEOUT = 4000; // 4 seconds timeout
+    let timer: NodeJS.Timeout | undefined;
+
     try {
         const { neighborhood } = req.params;
-        const stats = await bloomStatusDB.getNeighborhoodStats(neighborhood);
+        console.log(`Processing neighborhood: ${neighborhood}`);
+        
+        // Create a timeout promise
+        const timeoutPromise = new Promise((_, reject) => {
+            timer = setTimeout(() => {
+                console.log(`Request timeout for neighborhood: ${neighborhood}`);
+                reject(new Error('Request timeout'));
+            }, TIMEOUT);
+        });
+
+        // Create the stats promise
+        const statsPromise = bloomStatusDB.getNeighborhoodStats(neighborhood);
+
+        // Race between the timeout and the actual query
+        const stats = await Promise.race([statsPromise, timeoutPromise]);
+        
+        // Clear the timeout if the query completes
+        if (timer) clearTimeout(timer);
+        
+        if (stats.error) {
+            console.warn(`Warning fetching stats for ${neighborhood}:`, stats.error);
+        }
+        
         res.json(stats);
-    } catch (error) {
+    } catch (error: unknown) {
+        // Clear the timeout if there's an error
+        if (timer) clearTimeout(timer);
+        
         console.error('Error fetching neighborhood stats:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        if (error instanceof Error && error.message === 'Request timeout') {
+            res.status(504).json({ 
+                error: 'Request timeout',
+                message: 'The request took too long to process. Please try again.'
+            });
+        } else {
+            res.status(500).json({ 
+                error: 'Internal server error',
+                message: error instanceof Error ? error.message : 'Unknown error'
+            });
+        }
     }
 });
 
@@ -195,9 +248,28 @@ app.get('/api/bloom-status/recent', async (req, res) => {
 });
 
 // Start server only if not running on Vercel
-if (process.env.NODE_ENV !== 'production') {
-    app.listen(port, () => {
+if (NODE_ENV !== 'production') {
+    const server = app.listen(port, () => {
         console.log(`Server running on port ${port}`);
+    });
+
+    // Handle server errors
+    server.on('error', (error: NodeJS.ErrnoException) => {
+        if (error.code === 'EADDRINUSE') {
+            console.error(`Port ${port} is already in use. Please try a different port or kill the process using this port.`);
+            process.exit(1);
+        } else {
+            console.error('Server error:', error);
+        }
+    });
+
+    // Handle process termination
+    process.on('SIGTERM', () => {
+        console.log('Received SIGTERM. Closing server...');
+        server.close(() => {
+            console.log('Server closed');
+            process.exit(0);
+        });
     });
 }
 

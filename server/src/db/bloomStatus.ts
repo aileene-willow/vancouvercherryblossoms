@@ -41,70 +41,44 @@ export class BloomStatusDB {
 
     async updateStatus(
         street: string,
-        status: BloomStatus,
+        status: string,
         neighborhood: string,
-        latitude: number,
-        longitude: number,
-        treeCount: number
-    ): Promise<any> {
-        // Use transaction to ensure data consistency
+        latitude?: number,
+        longitude?: number,
+        treeCount?: number
+    ) {
         const client = await this.pool.connect();
         try {
             await client.query('BEGIN');
 
-            // Get or create street
-            let streetResult = await client.query(
-                'SELECT id FROM streets WHERE name = $1 AND neighborhood = $2',
-                [street, neighborhood]
+            // First, ensure the street exists
+            const streetResult = await client.query(
+                `INSERT INTO streets (name, neighborhood, tree_count)
+                VALUES ($1, $2, $3)
+                ON CONFLICT (name, neighborhood) 
+                DO UPDATE SET tree_count = EXCLUDED.tree_count
+                RETURNING id`,
+                [street, neighborhood, treeCount || 0]
             );
 
-            let streetId;
-            if (streetResult.rows.length === 0) {
-                const insertStreet = await client.query(
-                    'INSERT INTO streets (name, neighborhood, tree_count) VALUES ($1, $2, $3) RETURNING id',
-                    [street, neighborhood, treeCount]
-                );
-                streetId = insertStreet.rows[0].id;
-            } else {
-                streetId = streetResult.rows[0].id;
-                // Update tree count if it has changed
-                await client.query(
-                    'UPDATE streets SET tree_count = $1 WHERE id = $2',
-                    [treeCount, streetId]
-                );
-            }
-
-            // Insert new status report
-            const statusResult = await client.query(
+            // Insert the status report
+            const result = await client.query(
                 `INSERT INTO bloom_status_reports 
-                (street_id, status, latitude, longitude, reporter)
-                VALUES ($1, $2, $3, $4, $5)
-                RETURNING *`,
-                [streetId, status, latitude, longitude, 'Anonymous']
+                (street_id, status, timestamp, latitude, longitude)
+                VALUES ($1, $2::bloom_status, NOW(), $3, $4)
+                RETURNING id, 
+                    (SELECT name FROM streets WHERE id = $1) as street,
+                    status,
+                    (SELECT neighborhood FROM streets WHERE id = $1) as neighborhood,
+                    latitude,
+                    longitude,
+                    (SELECT tree_count FROM streets WHERE id = $1) as tree_count,
+                    timestamp as last_updated`,
+                [streetResult.rows[0].id, status, latitude || null, longitude || null]
             );
-
-            // Verify the status was inserted
-            const verifyResult = await client.query(
-                `SELECT * FROM current_bloom_status WHERE street_id = $1`,
-                [streetId]
-            );
-
-            if (verifyResult.rows.length === 0) {
-                throw new Error('Status update failed to appear in current_bloom_status view');
-            }
 
             await client.query('COMMIT');
-
-            // Return formatted result
-            return {
-                street,
-                status,
-                timestamp: statusResult.rows[0].timestamp,
-                neighborhood,
-                latitude,
-                longitude,
-                treeCount
-            };
+            return result.rows[0];
         } catch (error) {
             await client.query('ROLLBACK');
             console.error('Error in updateStatus:', error);
@@ -115,18 +89,66 @@ export class BloomStatusDB {
     }
 
     async getNeighborhoodStats(neighborhood: string): Promise<any> {
-        const query = `
-            SELECT 
-                CAST(COUNT(DISTINCT s.id) AS INTEGER) as total_streets,
-                CAST(COUNT(DISTINCT CASE WHEN cs.status = 'blooming' THEN s.id END) AS INTEGER) as blooming_count,
-                CAST(COUNT(DISTINCT CASE WHEN cs.status IS NULL OR cs.status = 'unknown' THEN s.id END) AS INTEGER) as unknown_count,
-                MAX(cs.last_updated) as last_updated
-            FROM streets s
-            LEFT JOIN current_bloom_status cs ON s.id = cs.street_id
-            WHERE s.neighborhood = $1
-        `;
-        const result = await this.pool.query(query, [neighborhood]);
-        return result.rows[0];
+        console.log(`Starting to fetch stats for neighborhood: ${neighborhood}`);
+        const client = await this.pool.connect();
+        
+        try {
+            // Set statement timeout to 3 seconds
+            await client.query('SET statement_timeout = 3000');
+            
+            const query = `
+                WITH latest_status AS (
+                    SELECT DISTINCT ON (s.name)
+                        s.name as street,
+                        bsr.status,
+                        bsr.timestamp as last_updated
+                    FROM streets s
+                    LEFT JOIN bloom_status_reports bsr ON s.id = bsr.street_id
+                    WHERE s.neighborhood = $1
+                    ORDER BY s.name, bsr.timestamp DESC
+                )
+                SELECT 
+                    COUNT(DISTINCT street) as total_streets,
+                    COUNT(DISTINCT CASE WHEN status = 'blooming' THEN street END) as blooming_count,
+                    COUNT(DISTINCT CASE WHEN status IS NULL OR status = 'unknown' THEN street END) as unknown_count,
+                    MAX(last_updated) as last_updated
+                FROM latest_status`;
+
+            console.log('Executing neighborhood stats query...');
+            const startTime = Date.now();
+            const result = await client.query(query, [neighborhood]);
+            const duration = Date.now() - startTime;
+            console.log(`Query completed in ${duration}ms`);
+
+            // If no results, return zero counts
+            if (!result.rows[0]) {
+                return {
+                    total_streets: 0,
+                    blooming_count: 0,
+                    unknown_count: 0,
+                    last_updated: null
+                };
+            }
+
+            return result.rows[0];
+        } catch (error) {
+            console.error('Error in getNeighborhoodStats:', error);
+            return {
+                total_streets: 0,
+                blooming_count: 0,
+                unknown_count: 0,
+                last_updated: null,
+                error: error instanceof Error ? error.message : 'Unknown error'
+            };
+        } finally {
+            // Reset statement timeout to default
+            try {
+                await client.query('RESET statement_timeout');
+            } catch (error) {
+                console.error('Error resetting statement timeout:', error);
+            }
+            client.release();
+        }
     }
 
     async getRecentReports(limit: number = 10): Promise<any[]> {
